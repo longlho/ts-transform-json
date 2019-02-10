@@ -1,0 +1,45 @@
+{
+  "name": "ts-transform-json",
+  "version": "1.0.0",
+  "description": "Inline specific values from a JSON file or the whole JSON blob",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "rm -rf test/fixture/*.js && mocha --require ts-node/register --recursive  test/**/*.test.ts",
+    "prettier": "prettier --print-width=120 --tab-width=4 --single-quote --trailing-comma=es5 --no-semi --parser=typescript --write 'src/**/*.ts*' || true",
+    "prepublishOnly": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/longlho/ts-transform-json.git"
+  },
+  "keywords": [
+    "typescript",
+    "ast",
+    "transform",
+    "json",
+    "compiler"
+  ],
+  "author": "Long Ho <holevietlong@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/longlho/ts-transform-json/issues"
+  },
+  "homepage": "https://github.com/longlho/ts-transform-json#readme",
+  "dependencies": {
+    "typescript": "3"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0",
+    "@types/chai": "^4.1.7",
+    "@types/fs-extra": "^5.0.4",
+    "@types/glob": "^7.1.1",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.10",
+    "chai": "^4.2.0",
+    "fs-extra": "^7.0.1",
+    "glob": "^7.1.3",
+    "pre-commit": "^1.2.2",
+    "prettier": "^1.15.2",
+    "ts-node": "^7.0.1"
+  }
+}
