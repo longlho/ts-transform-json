@@ -11,6 +11,7 @@
         "stripInternal": true,
         "jsx": "react",
         "noImplicitAny": true,
+        "resolveJsonModule": true,
         "outDir": "dist"
     },
     "include": [
