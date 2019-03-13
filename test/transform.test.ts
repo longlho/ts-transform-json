@@ -8,6 +8,7 @@ describe("json transformer", function() {
   it("should handle import {subkey}", function() {
     compile(resolve(__dirname, "fixture/foo.ts"));
     expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('var version = "1.0.0", dependencies = { "typescript": "3" }')
+    expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('var test = 1')
   });
   it("should handle import *", function() {
     compile(resolve(__dirname, "fixture/all.ts"));

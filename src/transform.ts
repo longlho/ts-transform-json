@@ -41,11 +41,23 @@ function trimQuote (path: string) {
     return path.slice(1, path.length - 1)
 }
 
+function resolveJsonImport (path: string): string {
+    if (path.endsWith('.json')) {
+        return path
+    }
+    try {
+        path = require.resolve(path + '.json')
+    } catch (_) {
+        return ''
+    }
+    return path
+}
+
 function visitor (ctx: ts.TransformationContext, sf: ts.SourceFile) {
     const visitor: ts.Visitor = (node: ts.Node): ts.Node => {
         let jsonPath: string
-        if (ts.isImportDeclaration(node) && (jsonPath = trimQuote(node.moduleSpecifier.getText(sf))).endsWith('.json')) {
-            const fullJsonPath = resolve(dirname(sf.fileName), jsonPath)
+        if (ts.isImportDeclaration(node) && (jsonPath = trimQuote(node.moduleSpecifier.getText(sf)))) {
+            const fullJsonPath = resolveJsonImport(resolve(dirname(sf.fileName), jsonPath))
             const json = require(fullJsonPath)
             // Default import, inline the whole json
             // and convert it to const foo = {json}
