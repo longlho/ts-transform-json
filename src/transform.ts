@@ -31,6 +31,36 @@ function serializeToAst(v: JSONValue): ts.Expression {
     }
 }
 
+function serializeToTypeAst(v: JSONValue): ts.TypeNode {
+    if (Array.isArray(v)) {
+        return ts.createTupleTypeNode(v.map(el => serializeToTypeAst(el)))
+    }
+    switch (typeof v) {
+        case 'string':
+            return ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword)
+        case 'number':
+            return ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword)
+        case 'boolean':
+            return v ? ts.createTrue() : ts.createFalse()
+        case 'object':
+            if (!v) {
+                return ts.createNull()
+            }
+            const keys = Object.keys(v)
+            return ts.createTypeLiteralNode(
+                keys.map(k =>
+                    ts.createPropertySignature(
+                        undefined,
+                        ts.createStringLiteral(k),
+                        undefined,
+                        serializeToTypeAst(v[k]),
+                        undefined
+                    )
+                )
+            )
+    }
+}
+
 function trimQuote(path: string) {
     return path.slice(1, path.length - 1)
 }
@@ -47,16 +77,20 @@ function resolveJsonImport(path: string): string {
     return path
 }
 
+function resolveJsonImportFromNode(node: ts.ImportDeclaration, sf: ts.SourceFile): string {
+    const jsonPath = trimQuote(node.moduleSpecifier.getText(sf))
+    return jsonPath && resolveJsonImport(resolve(dirname(sf.fileName), jsonPath))
+}
+
+export interface Opts {
+    isDeclaration?: boolean
+}
+
 function visitor(ctx: ts.TransformationContext, sf: ts.SourceFile) {
     const visitor: ts.Visitor = (node: ts.Node): ts.Node => {
         let jsonPath: string
-        let fullJsonPath: string
-        if (
-            ts.isImportDeclaration(node) &&
-            (jsonPath = trimQuote(node.moduleSpecifier.getText(sf))) &&
-            (fullJsonPath = resolveJsonImport(resolve(dirname(sf.fileName), jsonPath)))
-        ) {
-            const json = require(fullJsonPath)
+        if (ts.isImportDeclaration(node) && (jsonPath = resolveJsonImportFromNode(node, sf))) {
+            const json = require(jsonPath)
             // Default import, inline the whole json
             // and convert it to const foo = {json}
             let value: ts.VariableDeclarationList
@@ -81,8 +115,42 @@ function visitor(ctx: ts.TransformationContext, sf: ts.SourceFile) {
 
     return visitor
 }
-export function transform(): ts.TransformerFactory<ts.SourceFile> {
+
+function dtsVisitor(ctx: ts.TransformationContext, sf: ts.SourceFile) {
+    const visitor: ts.Visitor = (node: ts.Node): ts.Node => {
+        let jsonPath: string
+        if (ts.isImportDeclaration(node) && (jsonPath = resolveJsonImportFromNode(node, sf))) {
+            const json = require(jsonPath)
+            // Default import, inline the whole json
+            // and convert it to const foo = {json}
+            if (ts.isNamespaceImport(node.importClause.namedBindings)) {
+                return ts.createVariableStatement(
+                    [ts.createModifier(ts.SyntaxKind.DeclareKeyword)],
+                    ts.createVariableDeclarationList([
+                        ts.createVariableDeclaration(
+                            node.importClause.namedBindings.name.getText(sf),
+                            serializeToTypeAst(json)
+                        ),
+                    ])
+                )
+            } else if (ts.isNamedImports(node.importClause.namedBindings)) {
+                const keys = node.importClause.namedBindings.elements.map(el => el.name.getText(sf))
+                return ts.createVariableStatement(
+                    [ts.createModifier(ts.SyntaxKind.DeclareKeyword)],
+                    ts.createVariableDeclarationList(
+                        keys.map(k => ts.createVariableDeclaration(k, serializeToTypeAst(json[k])))
+                    )
+                )
+            }
+        }
+        return ts.visitEachChild(node, visitor, ctx)
+    }
+
+    return visitor
+}
+
+export function transform(opts: Opts): ts.TransformerFactory<ts.SourceFile> {
     return (ctx: ts.TransformationContext): ts.Transformer<ts.SourceFile> => {
-        return (sf: ts.SourceFile) => ts.visitNode(sf, visitor(ctx, sf))
+        return (sf: ts.SourceFile) => ts.visitNode(sf, opts.isDeclaration ? dtsVisitor(ctx, sf) : visitor(ctx, sf))
     }
 }

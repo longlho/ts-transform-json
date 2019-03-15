@@ -34,7 +34,10 @@ export default function compile(
 
   let emitResult = program.emit(undefined, undefined, undefined, undefined, {
     before: [
-      transform() as ts.TransformerFactory<ts.SourceFile>
+      transform({})
+    ],
+    afterDeclarations: [
+      transform({isDeclaration: true})
     ]
   });
 
