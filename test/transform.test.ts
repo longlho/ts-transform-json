@@ -9,10 +9,12 @@ describe("json transformer", function() {
     it("should handle import {subkey}", function() {
       compile(resolve(__dirname, "fixture/foo.ts"));
       expect(readFileSync(require.resolve('./fixture/foo.d.ts'), 'utf8')).to.equal(
-`export declare function foo(): (string | {
+`declare var test: number;
+export declare function foo(): (string | {
     "typescript": string;
 })[];
 export declare function getTest(): number;
+export declare type foo = typeof test;
 `)
     });
     it("should handle import *", function() {
@@ -100,9 +102,10 @@ export declare type Package = typeof packageJson;
 `)
     });
   })
-  it("should handle import {subkey}", function() {
+  it("should handle import {subkey} & alias", function() {
     compile(resolve(__dirname, "fixture/foo.ts"));
-    expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('var version = "1.0.2", dependencies = { "typescript": "3" }')
+    expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('var version = "1.0.4", dependencies = { "typescript": "3" }')
+    expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('LICENSE = "MIT"')
     expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('var test = 1')
   });
   it("should handle import *", function() {
