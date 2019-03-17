@@ -1,6 +1,6 @@
 # ts-transform-json
 
-![build status](https://travis-ci.org/dropbox/ts-transform-json.svg?branch=master)
+![build status](https://travis-ci.org/longlho/ts-transform-json.svg?branch=master)
 
 Inline specific values from a JSON file or the whole JSON blob
 
