@@ -104,7 +104,7 @@ export declare type Package = typeof packageJson;
   })
   it("should handle import {subkey} & alias", function() {
     compile(resolve(__dirname, "fixture/foo.ts"));
-    expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('var version = "1.0.4", dependencies = { "typescript": "3" }')
+    expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('var version = "1.0.5", dependencies = { "typescript": "3" }')
     expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('LICENSE = "MIT"')
     expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('var test = 1')
   });
