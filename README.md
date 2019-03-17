@@ -4,7 +4,7 @@
 
 Inline specific values from a JSON file or the whole JSON blob. For example:
 
-```
+```typescript
 import {version} from 'package.json'
 // becomes
 var version = '1.0.5'
