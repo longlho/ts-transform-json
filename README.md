@@ -2,7 +2,18 @@
 
 ![build status](https://travis-ci.org/longlho/ts-transform-json.svg?branch=master)
 
-Inline specific values from a JSON file or the whole JSON blob
+Inline specific values from a JSON file or the whole JSON blob. For example:
+
+```
+import {version} from 'package.json'
+// becomes
+var version = '1.0.5'
+
+// OR
+import * as packageJson from 'package.json'
+// becomes
+var packageJson = {"version": "1.0.5", dependencies: {}}
+```
 
 ## Usage
 
