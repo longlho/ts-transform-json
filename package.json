@@ -1,6 +1,6 @@
 {
   "name": "ts-transform-json",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Inline specific values from a JSON file or the whole JSON blob",
   "main": "dist/index.js",
   "scripts": {
@@ -26,7 +26,7 @@
   },
   "homepage": "https://github.com/longlho/ts-transform-json#readme",
   "dependencies": {
-    "typescript": "3"
+    "typescript": "^3.4.0-rc"
   },
   "devDependencies": {
     "mocha": "^5.2.0",
