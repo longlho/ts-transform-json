@@ -1,6 +1,6 @@
 {
   "name": "ts-transform-json",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Inline specific values from a JSON file or the whole JSON blob",
   "main": "dist/index.js",
   "scripts": {

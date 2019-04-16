@@ -90,6 +90,10 @@ function visitor({isDeclaration}: Opts, ctx: ts.TransformationContext, sf: ts.So
     const visitor: ts.Visitor = (node: ts.Node): ts.Node => {
         let jsonPath: string
         if (ts.isImportDeclaration(node) && (jsonPath = resolveJsonImportFromNode(node, sf))) {
+            // If it has no import class (e.g import 'foo'), rm the node
+            if (!node.importClause) {
+                return null
+            }
             const json = require(jsonPath)
             // Default import, inline the whole json
             // and convert it to const foo = {json}
