@@ -77,7 +77,7 @@ function resolveJsonImport(path: string): string {
     return path
 }
 
-function resolveJsonImportFromNode(node: ts.ImportDeclaration, sf: ts.SourceFile): string {
+function resolveJsonImportFromNode(node: ts.ImportDeclaration | ts.ExportDeclaration, sf: ts.SourceFile): string {
     const jsonPath = trimQuote(node.moduleSpecifier.getText(sf))
     return jsonPath && resolveJsonImport(resolve(dirname(sf.fileName), jsonPath))
 }
@@ -86,43 +86,67 @@ export interface Opts {
     isDeclaration?: boolean
 }
 
+function inlineJson (node: ts.ImportDeclaration | ts.ExportDeclaration, sf: ts.SourceFile, isDeclaration: boolean): ts.Node {
+    const jsonPath = resolveJsonImportFromNode(node, sf)
+    if (!jsonPath) {
+        return
+    }
+    const json = require(jsonPath)
+    // Default import, inline the whole json
+    // and convert it to const foo = {json}
+    let value: ts.VariableDeclarationList
+    let namespaceImport: ts.NamespaceImport | ts.NamespaceExportDeclaration
+    let namedImports: ts.NamedImports | ts.NamedExports
+    const isExportDeclaration = ts.isExportDeclaration(node)
+    if (ts.isImportDeclaration(node)) {
+        if (ts.isNamespaceImport(node.importClause.namedBindings)) {
+            namespaceImport = node.importClause.namedBindings
+        } else if (ts.isNamedImports(node.importClause.namedBindings)) {
+            namedImports = node.importClause.namedBindings
+        }
+    } else if (isExportDeclaration) {
+        namedImports = node.exportClause
+    }
+    if (namespaceImport) {
+        value = ts.createVariableDeclarationList([
+            ts.createVariableDeclaration(
+                namespaceImport.name.getText(sf),
+                isDeclaration && serializeToTypeAst(json),
+                !isDeclaration ? serializeToAst(json) : undefined
+            ),
+        ])
+    }
+    if (namedImports) {
+        // Create alias in case we have alias import
+        const aliases: Record<string, string> = (namedImports.elements as ReadonlyArray<ts.ImportSpecifier | ts.ExportSpecifier>).reduce((all: Record<string, string>, el) => {
+            if (el.propertyName) {
+                all[el.propertyName.getText(sf)] = el.name.getText(sf)
+            } else {
+                all[el.name.getText(sf)] = el.name.getText(sf)
+            }
+            return all
+        }, {})
+        value = ts.createVariableDeclarationList(
+            Object.keys(aliases).map(k => ts.createVariableDeclaration(aliases[k], isDeclaration && serializeToTypeAst(json[k]), !isDeclaration ? serializeToAst(json[k]) : undefined))
+        )
+    }
+    return ts.createVariableStatement([
+        ...isExportDeclaration ? [ts.createModifier(ts.SyntaxKind.ExportKeyword)] : [],
+        isDeclaration ? ts.createModifier(ts.SyntaxKind.DeclareKeyword) : ts.createModifier(ts.SyntaxKind.ConstKeyword)
+    ], value)
+}
+
 function visitor({isDeclaration}: Opts, ctx: ts.TransformationContext, sf: ts.SourceFile) {
     const visitor: ts.Visitor = (node: ts.Node): ts.Node => {
-        let jsonPath: string
-        if (ts.isImportDeclaration(node) && (jsonPath = resolveJsonImportFromNode(node, sf))) {
+        if (ts.isImportDeclaration(node)) {
             // If it has no import class (e.g import 'foo'), rm the node
             if (!node.importClause) {
                 return null
             }
-            const json = require(jsonPath)
-            // Default import, inline the whole json
-            // and convert it to const foo = {json}
-            let value: ts.VariableDeclarationList
-            if (ts.isNamespaceImport(node.importClause.namedBindings)) {
-                value = ts.createVariableDeclarationList([
-                    ts.createVariableDeclaration(
-                        node.importClause.namedBindings.name.getText(sf),
-                        isDeclaration && serializeToTypeAst(json),
-                        !isDeclaration ? serializeToAst(json) : undefined
-                    ),
-                ])
-            } else if (ts.isNamedImports(node.importClause.namedBindings)) {
-                // Create alias in case we have alias import
-                const aliases = node.importClause.namedBindings.elements.reduce((all, el) => {
-                    if (el.propertyName) {
-                        all[el.propertyName.getText(sf)] = el.name.getText(sf)
-                    } else {
-                        all[el.name.getText(sf)] = el.name.getText(sf)
-                    }
-                    return all
-                }, {} as Record<string, string>)
-                value = ts.createVariableDeclarationList(
-                    Object.keys(aliases).map(k => ts.createVariableDeclaration(aliases[k], isDeclaration && serializeToTypeAst(json[k]), !isDeclaration ? serializeToAst(json[k]) : undefined))
-                )
-            }
-            return ts.createVariableStatement([
-                isDeclaration ? ts.createModifier(ts.SyntaxKind.DeclareKeyword) : ts.createModifier(ts.SyntaxKind.ConstKeyword)
-            ], value)
+            return inlineJson(node, sf, isDeclaration) || ts.visitEachChild(node, visitor, ctx)
+        }
+        if (ts.isExportDeclaration(node)) {
+            return inlineJson(node, sf, isDeclaration) || ts.visitEachChild(node, visitor, ctx)
         }
         return ts.visitEachChild(node, visitor, ctx)
     }

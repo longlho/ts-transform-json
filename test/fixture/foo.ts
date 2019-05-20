@@ -8,3 +8,4 @@ export function getTest () {
     return test
 }
 export type foo = typeof test
+export {version} from '../../package.json'

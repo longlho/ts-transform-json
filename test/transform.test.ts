@@ -15,6 +15,7 @@ export declare function foo(): (string | {
 })[];
 export declare function getTest(): number;
 export declare type foo = typeof test;
+export declare var version: string;
 `)
     });
     it("should handle import *", function() {
@@ -112,4 +113,8 @@ export declare type Package = typeof packageJson;
     compile(resolve(__dirname, "fixture/all.ts"));
     expect(readFileSync(require.resolve('./fixture/all.js'), 'utf8')).to.contain('var packageJson = { "name": "ts-transform-json",')
   });
+  it('should handle re-export', function () {
+    compile(resolve(__dirname, "fixture/foo.ts"));
+    expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('export var version = "1.0.7"')
+  })
 });
