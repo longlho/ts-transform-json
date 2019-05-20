@@ -145,7 +145,7 @@ function visitor({isDeclaration}: Opts, ctx: ts.TransformationContext, sf: ts.So
             }
             return inlineJson(node, sf, isDeclaration) || ts.visitEachChild(node, visitor, ctx)
         }
-        if (ts.isExportDeclaration(node)) {
+        if (ts.isExportDeclaration(node) && node.moduleSpecifier) {
             return inlineJson(node, sf, isDeclaration) || ts.visitEachChild(node, visitor, ctx)
         }
         return ts.visitEachChild(node, visitor, ctx)
