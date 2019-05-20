@@ -45,7 +45,6 @@ export declare type foo = typeof test;
         "typescript": string;
     };
     "devDependencies": {
-        "mocha": string;
         "@types/chai": string;
         "@types/fs-extra": string;
         "@types/glob": string;
@@ -54,6 +53,7 @@ export declare type foo = typeof test;
         "chai": string;
         "fs-extra": string;
         "glob": string;
+        "mocha": string;
         "pre-commit": string;
         "prettier": string;
         "ts-node": string;
@@ -84,7 +84,6 @@ export declare function getAll(): {
         "typescript": string;
     };
     "devDependencies": {
-        "mocha": string;
         "@types/chai": string;
         "@types/fs-extra": string;
         "@types/glob": string;
@@ -93,6 +92,7 @@ export declare function getAll(): {
         "chai": string;
         "fs-extra": string;
         "glob": string;
+        "mocha": string;
         "pre-commit": string;
         "prettier": string;
         "ts-node": string;
@@ -104,7 +104,7 @@ export declare type Package = typeof packageJson;
   })
   it("should handle import {subkey} & alias", function() {
     compile(resolve(__dirname, "fixture/foo.ts"));
-    expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('var version = "1.0.5", dependencies = { "typescript": "3" }')
+    expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('var version = "1.0.7", dependencies = { "typescript": "^3.4.5" }')
     expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('LICENSE = "MIT"')
     expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('var test = 1')
   });
