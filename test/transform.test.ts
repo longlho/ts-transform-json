@@ -10,6 +10,7 @@ describe("json transformer", function() {
       compile(resolve(__dirname, "fixture/foo.ts"));
       expect(readFileSync(require.resolve('./fixture/foo.d.ts'), 'utf8')).to.equal(
 `declare var test: number;
+import 'chai';
 export declare function foo(): (string | {
     "typescript": string;
 })[];
@@ -105,7 +106,7 @@ export declare type Package = typeof packageJson;
   })
   it("should handle import {subkey} & alias", function() {
     compile(resolve(__dirname, "fixture/foo.ts"));
-    expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('var version = "1.0.8", dependencies = { "typescript": "^3.4.5" }')
+    expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('var version = "1.0.9", dependencies = { "typescript": "^3.4.5" }')
     expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('LICENSE = "MIT"')
     expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('var test = 1')
   });
@@ -115,6 +116,6 @@ export declare type Package = typeof packageJson;
   });
   it('should handle re-export', function () {
     compile(resolve(__dirname, "fixture/foo.ts"));
-    expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('export var version = "1.0.8"')
+    expect(readFileSync(require.resolve('./fixture/foo.js'), 'utf8')).to.contain('export var version = "1.0.9"')
   })
 });

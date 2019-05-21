@@ -1,6 +1,6 @@
 {
   "name": "ts-transform-json",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Inline specific values from a JSON file or the whole JSON blob",
   "main": "dist/index.js",
   "scripts": {
@@ -30,10 +30,10 @@
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
-    "@types/fs-extra": "^5.1.0",
+    "@types/fs-extra": "7",
     "@types/glob": "^7.1.1",
     "@types/mocha": "^5.2.6",
-    "@types/node": "^10.14.7",
+    "@types/node": "12",
     "chai": "^4.2.0",
     "fs-extra": "8",
     "glob": "^7.1.4",

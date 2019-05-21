@@ -86,11 +86,7 @@ export interface Opts {
     isDeclaration?: boolean
 }
 
-function inlineJson (node: ts.ImportDeclaration | ts.ExportDeclaration, sf: ts.SourceFile, isDeclaration: boolean): ts.Node {
-    const jsonPath = resolveJsonImportFromNode(node, sf)
-    if (!jsonPath) {
-        return
-    }
+function inlineJson (node: ts.ImportDeclaration | ts.ExportDeclaration, sf: ts.SourceFile, jsonPath: string, isDeclaration: boolean): ts.Node {
     const json = require(jsonPath)
     // Default import, inline the whole json
     // and convert it to const foo = {json}
@@ -138,15 +134,16 @@ function inlineJson (node: ts.ImportDeclaration | ts.ExportDeclaration, sf: ts.S
 
 function visitor({isDeclaration}: Opts, ctx: ts.TransformationContext, sf: ts.SourceFile) {
     const visitor: ts.Visitor = (node: ts.Node): ts.Node => {
-        if (ts.isImportDeclaration(node)) {
+        let jsonPath: string
+        if (ts.isImportDeclaration(node) && (jsonPath = resolveJsonImportFromNode(node, sf))) {
             // If it has no import class (e.g import 'foo'), rm the node
             if (!node.importClause) {
                 return null
             }
-            return inlineJson(node, sf, isDeclaration) || ts.visitEachChild(node, visitor, ctx)
+            return inlineJson(node, sf, jsonPath, isDeclaration) || ts.visitEachChild(node, visitor, ctx)
         }
-        if (ts.isExportDeclaration(node) && node.moduleSpecifier) {
-            return inlineJson(node, sf, isDeclaration) || ts.visitEachChild(node, visitor, ctx)
+        if (ts.isExportDeclaration(node) && node.moduleSpecifier && (jsonPath = resolveJsonImportFromNode(node, sf))) {
+            return inlineJson(node, sf, jsonPath, isDeclaration) || ts.visitEachChild(node, visitor, ctx)
         }
         return ts.visitEachChild(node, visitor, ctx)
     }
