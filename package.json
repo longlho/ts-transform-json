@@ -26,7 +26,7 @@
   },
   "homepage": "https://github.com/longlho/ts-transform-json#readme",
   "dependencies": {
-    "typescript": "^3.4.5"
+    "typescript": "3.2"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
