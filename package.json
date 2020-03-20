@@ -35,7 +35,7 @@
     "@types/mocha": "^5.2.6",
     "@types/node": "12",
     "chai": "^4.2.0",
-    "fs-extra": "8",
+    "fs-extra": "9",
     "glob": "^7.1.4",
     "mocha": "6",
     "pre-commit": "^1.2.2",
